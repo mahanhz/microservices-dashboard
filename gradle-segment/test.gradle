@@ -1,0 +1,16 @@
+def integrationTests = 'com/amhzing/microservicesdashboard/integrationtest/**'
+def smokeTests = 'com/amhzing/microservicesdashboard/smoketest/**'
+
+test {
+    exclude integrationTests
+    exclude smokeTests
+}
+
+task integrationTest(type:Test) {
+    include integrationTests
+    systemProperties['spring.profiles.active'] = 'online,test'
+}
+
+task smokeTest(type:Test) {
+    include smokeTests
+}

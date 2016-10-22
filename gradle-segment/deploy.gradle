@@ -1,0 +1,59 @@
+def deployFolder="scripts/deploy/"
+def deployFilePrefix="hystrix_dashboard_"
+
+def deployScript = deployFilePrefix + "deploy.sh"
+def deployScriptLocation = deployFolder + deployScript
+
+def testConf = deployFilePrefix + "test.conf"
+def testConfLocation = deployFolder  + testConf
+
+def productionConf = deployFilePrefix + "production.conf"
+def productionConfLocation = deployFolder  + productionConf
+
+def remoteLocation = "/home/pi"
+
+ssh.settings {
+    user = 'pi'
+    identity = file("${System.getProperty('user.home')}/.ssh/id_rsa")
+}
+
+remotes {
+    testServer {
+        role 'testServer'
+        host = '192.168.1.35'
+    }
+    prodServer {
+        role 'prodServer'
+        host = '192.168.1.35'
+    }
+}
+
+task deployToTest << {
+    ssh.run {
+        session(remotes.testServer) {
+            put from: "${testConfLocation}", into: "${remoteLocation}"
+            put from: "${deployScriptLocation}", into: "${remoteLocation}"
+
+            execute "sudo chmod 744 ${testConf}"
+            execute "sudo chmod 744 ${deployScript}"
+
+            execute "sudo ./${deployScript} ${repoId} ${artifactVersion} ${testConf}"
+            execute "sudo rm ${deployFilePrefix}*"
+        }
+    }
+}
+
+task deployToProduction << {
+    ssh.run {
+        session(remotes.prodServer) {
+            put from: "${productionConfLocation}", into: "${remoteLocation}"
+            put from: "${deployScriptLocation}", into: "${remoteLocation}"
+
+            execute "sudo chmod 744 ${productionConf}"
+            execute "sudo chmod 744 ${deployScript}"
+
+            execute "sudo ./${deployScript} ${repoId} ${artifactVersion} ${productionConf}"
+            execute "sudo rm ${deployFilePrefix}*"
+        }
+    }
+}

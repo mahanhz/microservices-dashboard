@@ -1,0 +1,36 @@
+#!groovy
+
+stage ('Approve deploy?') {
+    timeout(time: 5, unit: 'MINUTES') {
+        input message: 'Deploy snapshot?'
+    }
+}
+
+// one at a time!
+lock('lock-deploy-snapshot') {
+    stage('Deploy snapshot') {
+        node {
+            checkout scm
+
+            stash excludes: 'build/', includes: '**', name: 'source'
+
+            sh './gradlew deployToTest -PrepoId=snapshots -PartifactVersion=' + version()
+        }
+    }
+}
+
+stage ('Health check') {
+    node {
+        retry(5) {
+            unstash 'source'
+            sh 'chmod 755 gradlew'
+
+            sh 'SPRING_PROFILES_ACTIVE=test,testServer ./gradlew smokeTest'
+        }
+    }
+}
+
+def version() {
+    def props = readProperties file: 'gradle.properties'
+    return props['version']
+}
