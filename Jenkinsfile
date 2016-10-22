@@ -5,7 +5,7 @@ FALLBACK_RELEASE_VERSION = ""
 SELECTED_SEMANTIC_VERSION_UPDATE = ""
 DAYS_TO_KEEP_BUILDS = "1"
 NUMBER_OF_BUILDS_TO_KEEP = "10"
-REPOSITORY_URL="git@github.com:mahanhz/hystrix-dashboard-microservice.git"
+REPOSITORY_URL="git@github.com:mahanhz/microservices-dashboard.git"
 
 properties([[$class: 'BuildDiscarderProperty', strategy:
             [$class: 'LogRotator', artifactDaysToKeepStr: '',
@@ -39,7 +39,7 @@ if (!isMasterBranch()) {
         node {
             unstash 'source'
             sh 'chmod 755 gradlew'
-            sh 'SPRING_PROFILES_ACTIVE=test ./gradlew integrationTest'
+            gradle 'integrationTest'
         }
     }
 
@@ -103,7 +103,7 @@ if (isMasterBranch()) {
                 unstash 'source'
                 unstash 'masterProperties'
 
-                def script = "scripts/release/hystrix_dashboard_release.sh"
+                def script = "scripts/release/microservices_dashboard_release.sh"
                 sh "chmod 755 " + script
                 sh 'chmod 755 gradlew'
 

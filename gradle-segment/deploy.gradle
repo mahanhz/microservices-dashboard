@@ -1,5 +1,5 @@
 def deployFolder="scripts/deploy/"
-def deployFilePrefix="hystrix_dashboard_"
+def deployFilePrefix="microservices_dashboard_"
 
 def deployScript = deployFilePrefix + "deploy.sh"
 def deployScriptLocation = deployFolder + deployScript
